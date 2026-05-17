@@ -5,14 +5,23 @@
   --foreground: #171717;
 }
 
-/* @theme inline {
-  --color-background: var(--background);
+@theme inline {
+  /* --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-geist-mono); */
+
+  --color-lamaSky: #c3ebfa;
+  --color-lamaSkyLight: #edf9fd;
+
+  --color-lamaPurple: #cfcfff;
+  --color-lamaPurpleLight: #f1f0ff;
+
+  --color-lamaYellow: #fae27c;
+  --color-lamaYellowLight: #fefce8;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
