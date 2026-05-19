@@ -9,55 +9,56 @@ import {
   Legend,
 } from "recharts";
 import { RechartsDevtools } from "@recharts/devtools";
+import Image from "next/image";
 
 const data = [
   {
-    name: "Page A",
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
+    name: "Sat",
+    present: 39,
+    absent: 40,
   },
   {
-    name: "Page B",
-    uv: 3000,
-    pv: 1398,
-    amt: 2210,
+    name: "Sun",
+    present: 30,
+    absent: 13,
   },
   {
-    name: "Page C",
-    uv: 2000,
-    pv: 9800,
-    amt: 2290,
+    name: "Mon",
+    present: 20,
+    absent: 98,
   },
   {
-    name: "Page D",
-    uv: 2780,
-    pv: 3908,
-    amt: 2000,
+    name: "Tue",
+    present: 27,
+
+    absent: 39,
   },
   {
-    name: "Page E",
-    uv: 1890,
-    pv: 4800,
-    amt: 2181,
+    name: "Wed",
+    present: 18,
+    absent: 48,
   },
   {
-    name: "Page F",
-    uv: 2390,
-    pv: 3800,
-    amt: 2500,
+    name: "Thu",
+    present: 23,
+
+    absent: 38,
   },
   {
-    name: "Page G",
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
+    name: "Fri",
+    present: 34,
+    absent: 43,
   },
 ];
 
 const AttendenceChart = () => {
   return (
-    <div>
+    <div className="bg-white p-4 rounded-lg p-4 h-[75%]">
+      <div className="flex items-center justify-between">
+        <h1 className=" text-lg font-semibold mb-4">Weekly Attendence</h1>
+        <Image src="/moreDark.png" alt="More" width={20} height={20} />
+      </div>
+
       <BarChart
         style={{
           width: "100%",
@@ -65,6 +66,7 @@ const AttendenceChart = () => {
           maxHeight: "70vh",
           aspectRatio: 1.618,
         }}
+        barSize={10}
         responsive
         data={data}
         margin={{
@@ -74,22 +76,41 @@ const AttendenceChart = () => {
           bottom: 5,
         }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis width="auto" />
-        <Tooltip />
-        <Legend />
+        <Legend
+          align="left"
+          verticalAlign="top"
+          wrapperStyle={{ paddingBottom: "20px" }}
+        />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ddd" />
+        <XAxis
+          dataKey="name"
+          axisLine={false}
+          tick={{ fill: "#d1d5db" }}
+          tickLine={false}
+        />
+        <YAxis
+          width="auto"
+          axisLine={false}
+          tick={{ fill: "#d1d5db" }}
+          tickLine={false}
+        />
+        <Tooltip
+          contentStyle={{ borderRadius: "10px", borderColor: "lightgray" }}
+        />
+
         <Bar
-          dataKey="pv"
-          fill="#8884d8"
+          dataKey="present"
+          fill="#FAE27C"
           activeBar={{ fill: "pink", stroke: "blue" }}
           radius={[10, 10, 0, 0]}
+          legendType="circle"
         />
         <Bar
-          dataKey="uv"
-          fill="#82ca9d"
+          dataKey="absent"
+          fill="#C3EBFA"
           activeBar={{ fill: "gold", stroke: "purple" }}
           radius={[10, 10, 0, 0]}
+          legendType="circle"
         />
         <RechartsDevtools />
       </BarChart>

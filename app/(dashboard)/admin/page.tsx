@@ -2,6 +2,7 @@ import React from "react";
 import UserCard from "@/app/components/UserCard";
 import CountChart from "@/app/components/CountChart";
 import AttendenceChart from "@/app/components/AttendenceChart";
+import FinanceChart from "@/app/components/FinanceChart";
 
 const admin = () => {
   return (
@@ -22,6 +23,9 @@ const admin = () => {
           <div className="w-full lg:w-2/3 h-[500px] mt-4">
             <AttendenceChart />
           </div>
+        </div>
+        <div>
+          <FinanceChart />
         </div>
       </div>
       {/* right */}
