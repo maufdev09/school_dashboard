@@ -53,16 +53,19 @@ const data = [
 
 const AttendenceChart = () => {
   return (
-    <div className="bg-white p-4 rounded-lg p-4 h-[75%]">
-      <div className="flex items-center justify-between">
-        <h1 className=" text-lg font-semibold mb-4">Weekly Attendence</h1>
-        <Image src="/moreDark.png" alt="More" width={20} height={20} />
+    <div className="bg-white rounded-2xl p-4 h-full flex flex-col overflow-hidden">
+      {/* Title */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Attendance</h2>
+
+        <Image src="/moreDark.png" alt="Students" width={20} height={20} />
       </div>
 
       <BarChart
         style={{
           width: "100%",
           maxWidth: "700px",
+          height: "90%",
           maxHeight: "70vh",
           aspectRatio: 1.618,
         }}

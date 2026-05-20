@@ -3,6 +3,8 @@ import UserCard from "@/app/components/UserCard";
 import CountChart from "@/app/components/CountChart";
 import AttendenceChart from "@/app/components/AttendenceChart";
 import FinanceChart from "@/app/components/FinanceChart";
+import EventCalender from "@/app/components/EventCalender";
+import Announcements from "@/app/components/Announcements";
 
 const admin = () => {
   return (
@@ -24,12 +26,17 @@ const admin = () => {
             <AttendenceChart />
           </div>
         </div>
-        <div>
+        <div className="w-full mt-4">
           <FinanceChart />
         </div>
       </div>
       {/* right */}
-      <div className=" w-full lg:w-1/3 bg-amber-300">t</div>
+      <div className=" w-full lg:w-1/3 flex flex-col gap-8">
+        <div className="w-full mt-4">
+          <EventCalender />
+          <Announcements />
+        </div>
+      </div>
     </div>
   );
 };
