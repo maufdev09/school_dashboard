@@ -20,6 +20,28 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Database
+
+This project uses Prisma ORM with PostgreSQL.
+
+Copy `.env.example` to `.env`, then update `DATABASE_URL` with your PostgreSQL
+username, password, host, port, and database name.
+
+```bash
+npm run db:migrate
+npm run db:studio
+```
+
+Import `getPrisma` from `@/app/lib/prisma` in Server Components, Server
+Actions, or Route Handlers:
+
+```ts
+import { getPrisma } from "@/app/lib/prisma";
+
+const prisma = getPrisma();
+const classes = await prisma.class.findMany();
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
