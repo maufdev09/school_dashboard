@@ -12,6 +12,11 @@ datasource db {
   provider = "postgresql"
 }
 
+model Admin {
+  id       String @id
+  username String @unique
+}
+
 model Student {
   id          String       @id
   username    String       @unique
