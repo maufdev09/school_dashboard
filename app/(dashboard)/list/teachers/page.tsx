@@ -4,11 +4,22 @@ import Tablesearch from "@/app/components/Tablesearch";
 import { Teacher } from "@/app/generated/prisma/client";
 import { role, teachersData } from "@/app/lib/data";
 import { prisma } from "@/app/lib/prisma";
+import { ItemPerPage } from "@/app/lib/settings";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 const columns = [
+  {
+    header: "Info",
+    accessor: "username",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Teacher ID",
+    accessor: "id",
+    className: "hidden md:table-cell",
+  },
   {
     header: "Subjects",
     accessor: "subjects",
@@ -35,7 +46,10 @@ const columns = [
   },
 ];
 
-type TeacherList = Teacher & { subjects: string[]; classes: string[] };
+type TeacherList = Teacher & {
+  subjects: { name: string }[];
+  classes: { name: string }[];
+};
 
 const renderRow = (item: TeacherList) => (
   <tr
@@ -55,8 +69,13 @@ const renderRow = (item: TeacherList) => (
         <div className="text-xs text-gray-500">{item.email}</div>
       </div>
     </td>
-    <td className="hidden md:table-cell">{item.subjects.join(", ")}</td>
-    <td className="hidden md:table-cell">{item.classes.join(", ")}</td>
+    <td className="hidden md:table-cell">{item.id}</td>
+    <td className="hidden md:table-cell">
+      {item.subjects.map((subject) => subject.name).join(",")}
+    </td>
+    <td className="hidden md:table-cell">
+      {item.classes.map((cls) => cls.name).join(",")}
+    </td>
     <td className="hidden lg:table-cell">{item.phone}</td>
     <td className="hidden lg:table-cell">{item.address}</td>
     <td>
@@ -75,13 +94,29 @@ const renderRow = (item: TeacherList) => (
     </td>
   </tr>
 );
-const TeachersListPage = async () => {
-  const teacher = await prisma.teacher.findMany({
-    include: {
-      subjects: true,
-      classes: true,
-    },
-  });
+
+const TeachersListPage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) => {
+  const { page, ...queryParams } = searchParams;
+
+  const pageNumber = page ? parseInt(page) : 1;
+
+  const [data, count] = await prisma.$transaction([
+    prisma.teacher.findMany({
+      include: {
+        subjects: true,
+        classes: true,
+      },
+      take: ItemPerPage,
+      skip: (pageNumber - 1) * ItemPerPage,
+    }),
+    prisma.teacher.count(),
+  ]);
+
+  // console.log(data);
 
   return (
     <div className="bg-white p-4 rounded-md m-4 flex-1 mt-0">
@@ -107,11 +142,11 @@ const TeachersListPage = async () => {
 
       {/* list */}
       <div className="classNmae">
-        <Table columns={columns} renderRow={renderRow} data={teachersData} />
+        <Table columns={columns} renderRow={renderRow} data={data} />
       </div>
       {/* pagination */}
       <div className="classNmae">
-        <Pagination />
+        <Pagination count={count} pageNumber={pageNumber} />
       </div>
     </div>
   );

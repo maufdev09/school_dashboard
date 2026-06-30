@@ -1,6 +1,14 @@
 import React from "react";
 
-const Pagination = () => {
+const Pagination = ({
+  count,
+  pageNumber,
+}: {
+  count: number;
+  pageNumber: number;
+}) => {
+  console.log(count, pageNumber);
+
   return (
     <div className="flex items-center gap-2 justify-between  text-gray-500">
       <button
