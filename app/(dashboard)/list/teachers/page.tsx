@@ -1,7 +1,7 @@
 import Pagination from "@/app/components/Pagination";
 import Table from "@/app/components/Table";
 import Tablesearch from "@/app/components/Tablesearch";
-import { Teacher } from "@/app/generated/prisma/client";
+import { Prisma, Teacher } from "@/app/generated/prisma/client";
 import { role, teachersData } from "@/app/lib/data";
 import { prisma } from "@/app/lib/prisma";
 import { ItemPerPage } from "@/app/lib/settings";
@@ -80,7 +80,7 @@ const renderRow = (item: TeacherList) => (
     <td className="hidden lg:table-cell">{item.address}</td>
     <td>
       <div className="flex items-center gap-2 self-end">
-        <Link href={`/dashboard/teachers/${item.id}`}>
+        <Link href={`/teachers/${item.id}`}>
           <button className=" w-8 h-8  items-center  justify-center  bg-lamaSky p-2 rounded-full">
             <Image src="/view.png" alt="add" width={14} height={14} />
           </button>
@@ -98,14 +98,41 @@ const renderRow = (item: TeacherList) => (
 const TeachersListPage = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }) => {
-  const { page, ...queryParams } = searchParams;
+  const { page, ...queryParams } = await searchParams;
 
   const pageNumber = page ? parseInt(page) : 1;
 
+  // URL PARAMS CONDITON
+
+  const query: Prisma.TeacherWhereInput = {};
+
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "classId":
+            query.lessons = {
+              some: {
+                classId: parseInt(value),
+              },
+            };
+            break;
+          case "search":
+            query.name = {
+              contains: value,
+              mode: "insensitive",
+            };
+            break;
+        }
+      }
+    }
+  }
+
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
+      where: query,
       include: {
         subjects: true,
         classes: true,
@@ -113,7 +140,7 @@ const TeachersListPage = async ({
       take: ItemPerPage,
       skip: (pageNumber - 1) * ItemPerPage,
     }),
-    prisma.teacher.count(),
+    prisma.teacher.count({ where: query }),
   ]);
 
   // console.log(data);

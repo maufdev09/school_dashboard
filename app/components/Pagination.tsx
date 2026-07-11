@@ -12,17 +12,20 @@ const Pagination = ({
   pageNumber: number;
 }) => {
   const router = useRouter();
+
   const changePage = (newpage: number) => {
     const queryParams = new URLSearchParams(window.location.search);
     queryParams.set("page", newpage.toString());
 
     router.push(`${window.location.pathname}?${queryParams}`);
   };
+
   return (
     <div className="flex items-center gap-2 justify-between  text-gray-500">
       <button
+        onClick={() => changePage(pageNumber - 1)}
+        disabled={pageNumber <= 1}
         className="py-2 px-4 rounded-md bg-slate-200 text-xs font-semibold hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled
       >
         Prev
       </button>
@@ -42,7 +45,11 @@ const Pagination = ({
         )}
       </div>
 
-      <button className="py-2 px-4 rounded-md bg-slate-200 text-xs font-semibold hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+      <button
+        onClick={() => changePage(pageNumber + 1)}
+        disabled={pageNumber >= Math.ceil(count / ItemPerPage)}
+        className="py-2 px-4 rounded-md bg-slate-200 text-xs font-semibold hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
         Next
       </button>
     </div>
