@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { role } from "../lib/data";
+import { Role } from "../lib/auth";
 
-const Menu = () => {
+const Menu = ({ role }: { role: Role }) => {
   const menuItems = [
     {
       title: "MENU",

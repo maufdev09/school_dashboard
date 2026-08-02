@@ -1,32 +1,17 @@
 import { prisma } from "../lib/prisma";
-import FormModal from "./FormModal";
-// import { auth } from "@clerk/nextjs/server";
+import { getSession } from "../lib/auth";
+import FormModal, { FormTable } from "./FormModal";
 
 export type FormContainerProps = {
-  table:
-    | "teacher"
-    | "student"
-    | "parent"
-    | "subject"
-    | "class"
-    | "lesson"
-    | "exam"
-    | "assignment"
-    | "result"
-    | "attendance"
-    | "event"
-    | "announcement";
+  table: FormTable;
   type: "create" | "update" | "delete";
-  data?: any;
+  data?: Record<string, unknown>;
   id?: number | string;
 };
 
 const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
-  let relatedData = {};
-
-  const { userId, sessionClaims } = auth();
-  const role = (sessionClaims?.metadata as { role?: string })?.role;
-  const currentUserId = userId;
+  let relatedData: Record<string, unknown> = {};
+  const session = await getSession();
 
   if (type !== "delete") {
     switch (table) {
@@ -60,10 +45,31 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
         });
         relatedData = { classes: studentClasses, grades: studentGrades };
         break;
+      case "lesson":
+        const lessonSubjects = await prisma.subject.findMany({
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+        });
+        const lessonClasses = await prisma.class.findMany({
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+        });
+        const lessonTeachers = await prisma.teacher.findMany({
+          select: { id: true, name: true, surname: true },
+          orderBy: { name: "asc" },
+        });
+        relatedData = {
+          subjects: lessonSubjects,
+          classes: lessonClasses,
+          teachers: lessonTeachers,
+        };
+        break;
       case "exam":
         const examLessons = await prisma.lesson.findMany({
           where: {
-            ...(role === "teacher" ? { teacherId: currentUserId! } : {}),
+            ...(session?.role === "teacher"
+              ? { teacherId: session.userId }
+              : {}),
           },
           select: { id: true, name: true },
         });

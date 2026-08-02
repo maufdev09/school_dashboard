@@ -2,6 +2,39 @@
 
 export const role = "admin"; // change this to "student", "parent", "admin" to see the different views
 
+const getWeekStart = (referenceDate: Date) => {
+    const start = new Date(referenceDate);
+    start.setHours(0, 0, 0, 0);
+    const day = start.getDay();
+    const mondayOffset = day === 0 ? -6 : 1 - day;
+    start.setDate(start.getDate() + mondayOffset);
+    return start;
+};
+
+export const getCalendarEvents = (referenceDate: Date = new Date()) => {
+    const weekStart = getWeekStart(referenceDate);
+
+    const createDate = (dayOffset: number, hours: number, minutes: number) => {
+        const date = new Date(weekStart);
+        date.setDate(weekStart.getDate() + dayOffset);
+        date.setHours(hours, minutes, 0, 0);
+        return date;
+    };
+
+    return [
+        { title: "Math", allDay: false, start: createDate(0, 8, 0), end: createDate(0, 8, 45) },
+        { title: "English", allDay: false, start: createDate(0, 9, 0), end: createDate(0, 9, 45) },
+        { title: "Physics", allDay: false, start: createDate(0, 11, 0), end: createDate(0, 11, 45) },
+        { title: "History", allDay: false, start: createDate(0, 14, 0), end: createDate(0, 14, 45) },
+        { title: "Biology", allDay: false, start: createDate(1, 8, 0), end: createDate(1, 8, 45) },
+        { title: "Chemistry", allDay: false, start: createDate(1, 10, 0), end: createDate(1, 10, 45) },
+        { title: "English", allDay: false, start: createDate(1, 13, 0), end: createDate(1, 13, 45) },
+        { title: "Math", allDay: false, start: createDate(2, 9, 0), end: createDate(2, 9, 45) },
+        { title: "Physics", allDay: false, start: createDate(2, 11, 0), end: createDate(2, 11, 45) },
+        { title: "History", allDay: false, start: createDate(2, 14, 0), end: createDate(2, 14, 45) },
+    ];
+};
+
 export const teachersData = [
     {
         id: 1,

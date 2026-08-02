@@ -1,13 +1,12 @@
 import Pagination from "@/app/components/Pagination";
 import Table from "@/app/components/Table";
-import Tablesearch from "@/app/components/Tablesearch";
+import TableActions from "@/app/components/TableActions";
 import { Prisma, Teacher } from "@/app/generated/prisma/client";
-import { role, teachersData } from "@/app/lib/data";
+import { getSession } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import { ItemPerPage } from "@/app/lib/settings";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 
 const columns = [
   {
@@ -51,7 +50,7 @@ type TeacherList = Teacher & {
   classes: { name: string }[];
 };
 
-const renderRow = (item: TeacherList) => (
+const renderRow = (item: TeacherList, canManage: boolean) => (
   <tr
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
@@ -80,12 +79,12 @@ const renderRow = (item: TeacherList) => (
     <td className="hidden lg:table-cell">{item.address}</td>
     <td>
       <div className="flex items-center gap-2 self-end">
-        <Link href={`/teachers/${item.id}`}>
+        <Link href={`/list/teachers/${item.id}`}>
           <button className=" w-8 h-8  items-center  justify-center  bg-lamaSky p-2 rounded-full">
             <Image src="/view.png" alt="add" width={14} height={14} />
           </button>
         </Link>
-        {role === "admin" && (
+        {canManage && (
           <button className=" w-8 h-8  items-center  justify-center  bg-lamaPurple p-2 rounded-full">
             <Image src="/delete.png" alt="add" width={14} height={14} />
           </button>
@@ -103,6 +102,9 @@ const TeachersListPage = async ({
   const { page, ...queryParams } = await searchParams;
 
   const pageNumber = page ? parseInt(page) : 1;
+  const sortOrder: Prisma.SortOrder =
+    queryParams.sort === "desc" ? "desc" : "asc";
+  const session = await getSession();
 
   // URL PARAMS CONDITON
 
@@ -120,17 +122,21 @@ const TeachersListPage = async ({
             };
             break;
           case "search":
-            query.name = {
-              contains: value,
-              mode: "insensitive",
-            };
+            query.OR = [
+              { name: { contains: value, mode: "insensitive" } },
+              { surname: { contains: value, mode: "insensitive" } },
+              { email: { contains: value, mode: "insensitive" } },
+            ];
+            break;
+          case "sort":
             break;
         }
       }
     }
   }
 
-  const [data, count] = await prisma.$transaction([
+  // Run queries in parallel without transaction to avoid connection pool exhaustion
+  const [data, count, classes] = await Promise.all([
     prisma.teacher.findMany({
       where: query,
       include: {
@@ -139,8 +145,13 @@ const TeachersListPage = async ({
       },
       take: ItemPerPage,
       skip: (pageNumber - 1) * ItemPerPage,
+      orderBy: { name: sortOrder },
     }),
     prisma.teacher.count({ where: query }),
+    prisma.class.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   // console.log(data);
@@ -152,24 +163,28 @@ const TeachersListPage = async ({
         <h1 className="hidden md:block text-lg font-semibold">All Teachers</h1>
 
         <div className=" flex flex-col md:flex-row items-center  w-full md:w-auto  mb-4 gap-2">
-          <Tablesearch />
-          <div className="flex items-center gap-4 self-end">
-            <button className=" w-8 h-8  items-center  justify-center  bg-lamaYellow p-2 rounded-full">
-              <Image src="/filter.png" alt="add" width={14} height={14} />
-            </button>
-            <button className=" w-8 h-8  items-center  justify-center  bg-lamaYellow p-2 rounded-full">
-              <Image src="/sort.png" alt="add" width={14} height={14} />
-            </button>
-            <button className=" w-8 h-8  items-center  justify-center  bg-lamaYellow p-2 rounded-full">
-              <Image src="/plus.png" alt="add" width={14} height={14} />
-            </button>
-          </div>
+          <TableActions
+            filters={[
+              {
+                label: "Class",
+                param: "classId",
+                options: classes.map((classItem) => ({
+                  label: classItem.name,
+                  value: classItem.id.toString(),
+                })),
+              },
+            ]}
+          />
         </div>
       </div>
 
       {/* list */}
       <div className="classNmae">
-        <Table columns={columns} renderRow={renderRow} data={data} />
+        <Table
+          columns={columns}
+          renderRow={(item) => renderRow(item, session?.role === "admin")}
+          data={data}
+        />
       </div>
       {/* pagination */}
       <div className="classNmae">

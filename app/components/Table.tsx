@@ -1,13 +1,19 @@
 import React from "react";
 
-const Table = ({
+export type TableColumn = {
+  header: string;
+  accessor: string;
+  className?: string;
+};
+
+const Table = <T,>({
   columns,
   data,
   renderRow,
 }: {
-  columns: { header: string; accessor: string; className?: string }[];
-  data: any[];
-  renderRow: (item: any) => React.ReactNode;
+  columns: TableColumn[];
+  data: T[];
+  renderRow: (item: T) => React.ReactNode;
 }) => {
   return (
     <table className="w-full mt-4">

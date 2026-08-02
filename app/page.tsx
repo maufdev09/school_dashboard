@@ -1,5 +1,8 @@
-import Image from "next/image";
+import { getRoleDashboardPath, getSession } from "@/app/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return <div>Home</div>;
+export default async function Home() {
+  const session = await getSession();
+
+  redirect(session ? getRoleDashboardPath(session.role) : "/login");
 }

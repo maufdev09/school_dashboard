@@ -1,7 +1,6 @@
 import Announcements from "@/app/components/Announcements";
 import BigCalender from "@/app/components/BigCalender";
 import Performance from "@/app/components/Performance";
-import { role } from "@/app/lib/data";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -144,14 +143,20 @@ const SingleTeacherPage = () => {
           <div className="mt-4 flex gap-4 flex-wrap text-xs text-gray-500">
             <Link
               className="p-3 rounded-md bg-lamaSkyLight"
-              href={`/list/students?teacherId=${"teacher2"}`}
+              href={`/list/classes?supervisorId=${"teacher2"}`}
             >
               Teacher&apos;s Classes
             </Link>
-            <Link className="p-3 rounded-md bg-lamaPurpleLight" href="/">
+            <Link
+              className="p-3 rounded-md bg-lamaPurpleLight"
+              href={`/list/students?teacherId=${"teacher2"}`}
+            >
               Teacher&apos;s Students
             </Link>
-            <Link className="p-3 rounded-md bg-lamaYellowLight" href="/">
+            <Link
+              className="p-3 rounded-md bg-lamaYellowLight"
+              href={`/list/lessons?teacherId=${"teacher2"}`}
+            >
               Teacher&apos;s Lessons
             </Link>
             <Link className="p-3 rounded-md bg-pink-50" href="/">

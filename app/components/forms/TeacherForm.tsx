@@ -26,14 +26,18 @@ const schema = z.object({
 });
 
 type Inputs = z.infer<typeof schema>;
+type TeacherFormData = Partial<Record<keyof Inputs | "id", string>>;
 
 const TeacherForm = ({
   type,
   data,
+  relatedData,
 }: {
   type: "create" | "update";
-  data?: any;
+  data?: TeacherFormData;
+  relatedData?: Record<string, unknown>;
 }) => {
+  void relatedData;
   const {
     register,
     handleSubmit,

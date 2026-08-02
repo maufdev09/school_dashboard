@@ -5,34 +5,51 @@ import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/app/lib/prisma";
 import { ItemPerPage } from "@/app/lib/settings";
 
-type Announcement = {
+type MessageList = {
   id: number;
   title: string;
+  description: string;
   date: Date;
   class: { name: string } | null;
 };
 
 const columns = [
+  { header: "Message", accessor: "message" },
   {
-    header: "Title",
-    accessor: "title",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Date",
-    accessor: "date",
+    header: "Audience",
+    accessor: "audience",
     className: "hidden md:table-cell",
   },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  { header: "Date", accessor: "date", className: "hidden md:table-cell" },
+  { header: "Status", accessor: "status" },
 ];
 
-const AnnouncementListPage = async ({
+const renderRow = (item: MessageList) => (
+  <tr
+    key={item.id}
+    className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
+  >
+    <td className="p-4">
+      <div className="flex flex-col gap-1">
+        <span className="font-semibold">{item.title}</span>
+        <span className="text-xs text-gray-500">{item.description}</span>
+      </div>
+    </td>
+    <td className="hidden md:table-cell">
+      {item.class?.name ?? "All classes"}
+    </td>
+    <td className="hidden md:table-cell">
+      {new Intl.DateTimeFormat("en-US").format(item.date)}
+    </td>
+    <td>
+      <span className="rounded-full bg-lamaYellowLight px-3 py-1 text-xs font-semibold text-yellow-700">
+        Sent
+      </span>
+    </td>
+  </tr>
+);
+
+const MessagesListPage = async ({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
@@ -54,7 +71,7 @@ const AnnouncementListPage = async ({
       case "search":
         query.OR = [
           { title: { contains: value, mode: "insensitive" } },
-          { class: { name: { contains: value, mode: "insensitive" } } },
+          { description: { contains: value, mode: "insensitive" } },
         ];
         break;
       case "sort":
@@ -78,36 +95,10 @@ const AnnouncementListPage = async ({
     }),
   ]);
 
-  const renderRow = (item: Announcement) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-    >
-      <td className="flex items-center gap-4 p-4">{item.title}</td>
-      <td>{item.class?.name ?? "All classes"}</td>
-      <td className="hidden md:table-cell">
-        {new Intl.DateTimeFormat("en-US").format(item.date)}
-      </td>
-      <td>
-        <div className="flex items-center gap-2">
-          {/* {role === "admin" && (
-            <>
-              <FormModal table="announcement" type="update" data={item} />
-              <FormModal table="announcement" type="delete" id={item.id} />
-            </>
-          )} */}
-        </div>
-      </td>
-    </tr>
-  );
-
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">
-          All Announcements
-        </h1>
+        <h1 className="hidden md:block text-lg font-semibold">Messages</h1>
         <TableActions
           filters={[
             {
@@ -121,12 +112,10 @@ const AnnouncementListPage = async ({
           ]}
         />
       </div>
-      {/* LIST */}
       <Table columns={columns} renderRow={renderRow} data={data} />
-      {/* PAGINATION */}
       <Pagination count={count} pageNumber={pageNumber} />
     </div>
   );
 };
 
-export default AnnouncementListPage;
+export default MessagesListPage;

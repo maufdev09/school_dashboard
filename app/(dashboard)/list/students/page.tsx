@@ -1,9 +1,9 @@
 import FormModal from "@/app/components/FormModal";
 import Pagination from "@/app/components/Pagination";
 import Table from "@/app/components/Table";
-import Tablesearch from "@/app/components/Tablesearch";
+import TableActions from "@/app/components/TableActions";
 import { Class, Prisma, Student } from "@/app/generated/prisma/client";
-import { role, studentsData } from "@/app/lib/data";
+import { getSession } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import { ItemPerPage } from "@/app/lib/settings";
 import Image from "next/image";
@@ -44,7 +44,7 @@ const columns = [
   },
 ];
 
-const renderRow = (item: StudentList) => (
+const renderRow = (item: StudentList, canManage: boolean) => (
   <tr
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
@@ -73,7 +73,7 @@ const renderRow = (item: StudentList) => (
             <Image src="/view.png" alt="" width={16} height={16} />
           </button>
         </Link>
-        {role === "admin" && (
+        {canManage && (
           // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaPurple">
           //   <Image src="/delete.png" alt="" width={16} height={16} />
           // </button>
@@ -92,6 +92,9 @@ const StudentListPage = async ({
   const { page, ...queryParams } = await searchParams;
 
   const pageNumber = page ? parseInt(page) : 1;
+  const sortOrder: Prisma.SortOrder =
+    queryParams.sort === "desc" ? "desc" : "asc";
+  const session = await getSession();
 
   // URL PARAMS CONDITON
 
@@ -110,18 +113,25 @@ const StudentListPage = async ({
               },
             };
             break;
+          case "classId":
+            query.classId = parseInt(value);
+            break;
           case "search":
-            query.name = {
-              contains: value,
-              mode: "insensitive",
-            };
+            query.OR = [
+              { name: { contains: value, mode: "insensitive" } },
+              { surname: { contains: value, mode: "insensitive" } },
+              { username: { contains: value, mode: "insensitive" } },
+            ];
+            break;
+          case "sort":
             break;
         }
       }
     }
   }
 
-  const [data, count] = await prisma.$transaction([
+  // Run queries in parallel without transaction to avoid connection pool exhaustion
+  const [data, count, classes, teachers] = await Promise.all([
     prisma.student.findMany({
       where: query,
       include: {
@@ -129,8 +139,17 @@ const StudentListPage = async ({
       },
       take: ItemPerPage,
       skip: (pageNumber - 1) * ItemPerPage,
+      orderBy: { name: sortOrder },
     }),
     prisma.student.count({ where: query }),
+    prisma.class.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.teacher.findMany({
+      select: { id: true, name: true, surname: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   return (
@@ -139,25 +158,34 @@ const StudentListPage = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">All Students</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <Tablesearch />
-          <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-            {/* {role === "admin" && (
-              // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              //   <Image src="/plus.png" alt="" width={14} height={14} />
-              // </button>
-              <FormModal table="student" type="create"/>
-            )} */}
-          </div>
+          <TableActions
+            filters={[
+              {
+                label: "Class",
+                param: "classId",
+                options: classes.map((classItem) => ({
+                  label: classItem.name,
+                  value: classItem.id.toString(),
+                })),
+              },
+              {
+                label: "Teacher",
+                param: "teacherId",
+                options: teachers.map((teacher) => ({
+                  label: `${teacher.name} ${teacher.surname}`,
+                  value: teacher.id,
+                })),
+              },
+            ]}
+          />
         </div>
       </div>
       {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
+      <Table
+        columns={columns}
+        renderRow={(item) => renderRow(item, session?.role === "admin")}
+        data={data}
+      />
       <Pagination count={count} pageNumber={pageNumber} />
     </div>
   );

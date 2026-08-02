@@ -17,23 +17,21 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
     // Keep the development seed repeatable by removing dependent records first.
-    await prisma.$transaction([
-        prisma.result.deleteMany(),
-        prisma.attendance.deleteMany(),
-        prisma.exam.deleteMany(),
-        prisma.assignment.deleteMany(),
-        prisma.lesson.deleteMany(),
-        prisma.event.deleteMany(),
-        prisma.announcement.deleteMany(),
-        prisma.student.deleteMany(),
-        prisma.parent.deleteMany(),
-        prisma.class.deleteMany(),
-        prisma.grade.deleteMany(),
-        prisma.teacher.deleteMany(),
-        prisma.subject.deleteMany(),
-        prisma.admin.deleteMany(),
-    ]);
 
+    await prisma.result.deleteMany();
+    await prisma.attendance.deleteMany();
+    await prisma.exam.deleteMany();
+    await prisma.assignment.deleteMany();
+    await prisma.lesson.deleteMany();
+    await prisma.event.deleteMany();
+    await prisma.announcement.deleteMany();
+    await prisma.student.deleteMany();
+    await prisma.parent.deleteMany();
+    await prisma.class.deleteMany();
+    await prisma.grade.deleteMany();
+    await prisma.teacher.deleteMany();
+    await prisma.subject.deleteMany();
+    await prisma.admin.deleteMany();
     // ADMIN
     await prisma.admin.create({
         data: {

@@ -1,16 +1,21 @@
-import { FieldError } from "react-hook-form";
+import {
+  FieldError,
+  FieldValues,
+  Path,
+  UseFormRegister,
+} from "react-hook-form";
 
-type InputFieldProps = {
+type InputFieldProps<T extends FieldValues> = {
   label: string;
   type?: string;
-  register: any;
-  name: string;
+  register: UseFormRegister<T>;
+  name: Path<T>;
   defaultValue?: string;
   error?: FieldError;
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
 };
 
-const InputField = ({
+const InputField = <T extends FieldValues>({
   label,
   type = "text",
   register,
@@ -18,7 +23,7 @@ const InputField = ({
   defaultValue,
   error,
   inputProps,
-}: InputFieldProps) => {
+}: InputFieldProps<T>) => {
   return (
     <div className="flex flex-col gap-2 w-full md:w-1/4">
       <label className="text-xs text-gray-500">{label}</label>
